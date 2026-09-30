@@ -6,7 +6,7 @@
 
 **Architecture:** `chokidar` watcher → Zod-validated ingest → SQLite queue (single source of truth) → `node-schedule` scheduler with backoff → pluggable `UploaderPlugin` (YouTube first) using resumable upload with `private + publishAt`. React dashboard is display-only.
 
-**Tech Stack:** Electron ^33, electron-vite ^3, Vite ^6, React ^19, TypeScript ~5.7, TailwindCSS, better-sqlite3 ^11, chokidar ^4, googleapis ^144 (youtube v3), zod ^3, node-schedule ^2, vitest ^3, electron-builder ^25, ffprobe-static, auto-launch ^5.
+**Tech Stack:** Electron ^44, electron-vite ^3, Vite ^6, React ^19, TypeScript ~5.7, TailwindCSS, better-sqlite3 ^13 (requires Electron ≥44 — v13 prebuild crashes on Electron 33), chokidar ^3 (CJS — v4+ is ESM-only and breaks the CJS main bundle), googleapis ^144 (youtube v3), zod ^3, vitest ^3, electron-builder ^25, ffprobe-static.
 
 **Spec:** `docs/superpowers/specs/2026-09-30-scheduled-uploader-design.md`
 

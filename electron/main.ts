@@ -127,8 +127,34 @@ function bootServices(): void {
   });
 }
 
+function logStartup(msg: string): void {
+  try {
+    const dir = app.getPath("userData");
+    if (!existsSync(dir)) mkdirSync(dir, { recursive: true });
+    writeFileSync(join(dir, "startup.log"), `${new Date().toISOString()} ${msg}\n`, { flag: "a" });
+  } catch {
+    /* logging must never crash startup */
+  }
+}
+
+process.on("uncaughtException", (err) => {
+  logStartup(`uncaught: ${(err as Error).stack ?? (err as Error).message}`);
+  app.quit();
+});
+
+process.on("unhandledRejection", (reason) => {
+  logStartup(`rejection: ${String(reason)}`);
+});
+
 void app.whenReady().then(() => {
-  bootServices();
+  try {
+    bootServices();
+  } catch (err) {
+    logStartup(`boot failed: ${(err as Error).stack ?? (err as Error).message}`);
+    app.quit();
+    return;
+  }
+  logStartup("boot ok");
   void createWindow();
 });
 
