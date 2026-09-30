@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Poster — Scheduled Video Uploader</title>
+<style>
+body{font-family:system-ui,-apple-system,sans-serif;max-width:820px;margin:0 auto;padding:40px 20px;line-height:1.7;color:#1c1c1c}
+header{text-align:center;margin-bottom:36px}
+h1{font-size:2em;margin-bottom:.2em}
+.tag{color:#555;font-size:1.1em}
+.card{border:1px solid #e2e2e2;border-radius:12px;padding:20px 24px;margin:18px 0}
+ol{padding-left:22px}
+.btn{display:inline-block;background:#111;color:#fff;padding:10px 22px;border-radius:8px;text-decoration:none;margin:6px 8px 6px 0}
+footer{margin-top:36px;padding-top:16px;border-top:1px solid #e2e2e2;color:#666;font-size:.9em}
+footer a{color:#444;margin-right:14px}
+code{background:#f4f4f4;padding:2px 6px;border-radius:4px}
+</style>
+</head>
+<body>
+<header>
+<h1>Poster</h1>
+<p class="tag">Desktop app that schedules short videos from a local folder and auto-posts them to your social accounts.</p>
+<a class="btn" href="https://github.com/hmsalbokh/poster">View on GitHub</a>
+</header>
+
+<div class="card">
+<h2>How it works</h2>
+<ol>
+<li><strong>Drop files in:</strong> place an <code>.mp4</code> video plus a <code>.json</code> sidecar (title, description, tags, scheduled publish time, destinations) into the watched folder.</li>
+<li><strong>Link accounts:</strong> connect your YouTube and TikTok accounts from the Account tab (OAuth, tokens stay encrypted on your device).</li>
+<li><strong>Auto-publish:</strong> at the scheduled time Poster uploads each video to the selected destinations (YouTube, TikTok, or both) and tracks every attempt in the queue and log.</li>
+</ol>
+</div>
+
+<div class="card">
+<h2>Features</h2>
+<ul>
+<li>Scheduled publishing to YouTube Shorts and TikTok (Direct Post).</li>
+<li>Per-video destinations and TikTok privacy level, set in the sidecar file.</li>
+<li>Live queue with statuses: pending, uploading, scheduled, published, failed — plus retry.</li>
+<li>Automatic token refresh, encrypted local credential storage, no servers, no tracking.</li>
+</ul>
+</div>
+
+<div class="card">
+<h2>Platforms</h2>
+<p>Windows desktop (Electron). Free and open source: <a href="https://github.com/hmsalbokh/poster">github.com/hmsalbokh/poster</a></p>
+</div>
+
+<footer>
+<a href="../legal/privacy-policy.html">Privacy Policy</a>
+<a href="../legal/terms-of-service.html">Terms of Service</a>
+<span>Contact: nonogomeez@gmail.com</span>
+</footer>
+</body>
+</html>
