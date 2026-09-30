@@ -10,6 +10,12 @@ contextBridge.exposeInMainWorld("poster", {
   getSetting: (key: string) => ipcRenderer.invoke("get-setting", key),
   setSetting: (key: string, value: string) => ipcRenderer.invoke("set-setting", key, value),
   authStatus: () => ipcRenderer.invoke("auth-status"),
+  getClient: () => ipcRenderer.invoke("get-client"),
+  tiktokAuthStatus: () => ipcRenderer.invoke("tiktok-auth-status"),
+  getTikTokClient: () => ipcRenderer.invoke("get-tiktok-client"),
+  saveTikTokClient: (clientKey: string, clientSecret: string) =>
+    ipcRenderer.invoke("save-tiktok-client", clientKey, clientSecret),
+  beginTikTokLogin: () => ipcRenderer.invoke("begin-tiktok-login"),
   saveClient: (clientId: string, clientSecret: string) => ipcRenderer.invoke("save-client", clientId, clientSecret),
   beginLogin: () => ipcRenderer.invoke("begin-login"),
   quotaStatus: () => ipcRenderer.invoke("quota-status")

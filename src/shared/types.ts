@@ -14,6 +14,9 @@ export interface VideoRow {
   lang: string;
   status: VideoStatus;
   youtube_video_id: string | null;
+  tiktok_publish_id: string | null;
+  targets: string;
+  tiktok_privacy: string | null;
   error: string | null;
   attempts: number;
 }

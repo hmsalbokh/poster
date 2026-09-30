@@ -9,6 +9,10 @@ export interface IpcDeps {
   watchDir: () => string;
   beginLoginFlow: () => Promise<string>;
   saveClientCreds: (clientId: string, clientSecret: string) => Promise<void>;
+  getClientInfo: () => { clientId: string; hasSecret: boolean; linked: boolean };
+  beginTikTokLoginFlow: () => Promise<string>;
+  saveTikTokClientCreds: (clientKey: string, clientSecret: string) => Promise<void>;
+  getTikTokClientInfo: () => { clientKey: string; hasSecret: boolean; linked: boolean };
 }
 
 function todayStartIso(): string {
@@ -18,7 +22,17 @@ function todayStartIso(): string {
 }
 
 export function registerIpc(deps: IpcDeps): void {
-  const { store, auth, watchDir, beginLoginFlow, saveClientCreds } = deps;
+  const {
+    store,
+    auth,
+    watchDir,
+    beginLoginFlow,
+    saveClientCreds,
+    getClientInfo,
+    beginTikTokLoginFlow,
+    saveTikTokClientCreds,
+    getTikTokClientInfo
+  } = deps;
   ipcMain.handle("list-videos", () => store.listAll());
   ipcMain.handle("retry-video", (_e, id: string) => {
     store.setStatus(id, "pending", { attempts: 0, error: null });
@@ -31,6 +45,13 @@ export function registerIpc(deps: IpcDeps): void {
     store.setSetting(key, value);
   });
   ipcMain.handle("auth-status", () => ({ signedIn: auth.isSignedIn() }));
+  ipcMain.handle("get-client", () => getClientInfo());
+  ipcMain.handle("tiktok-auth-status", () => ({ linked: getTikTokClientInfo().linked }));
+  ipcMain.handle("get-tiktok-client", () => getTikTokClientInfo());
+  ipcMain.handle("save-tiktok-client", (_e, clientKey: string, clientSecret: string) =>
+    saveTikTokClientCreds(clientKey, clientSecret)
+  );
+  ipcMain.handle("begin-tiktok-login", () => beginTikTokLoginFlow());
   ipcMain.handle("save-client", (_e, clientId: string, clientSecret: string) =>
     saveClientCreds(clientId, clientSecret)
   );

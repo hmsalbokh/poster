@@ -8,7 +8,8 @@ CREATE TABLE IF NOT EXISTS videos(
   id TEXT PRIMARY KEY, file_path TEXT UNIQUE NOT NULL, json_path TEXT,
   title TEXT, description TEXT, tags TEXT, publishAt TEXT, lang TEXT,
   status TEXT NOT NULL, youtube_video_id TEXT, error TEXT,
-  attempts INTEGER NOT NULL DEFAULT 0, created_at TEXT NOT NULL, updated_at TEXT NOT NULL);
+  attempts INTEGER NOT NULL DEFAULT 0, created_at TEXT NOT NULL, updated_at TEXT NOT NULL,
+  targets TEXT, tiktok_privacy TEXT, tiktok_publish_id TEXT);
 CREATE TABLE IF NOT EXISTS events(
   id INTEGER PRIMARY KEY AUTOINCREMENT, video_id TEXT, level TEXT NOT NULL,
   message TEXT NOT NULL, at TEXT NOT NULL);
@@ -19,6 +20,17 @@ export class VideoStore {
   private constructor(db: Database.Database) {
     this.db = db;
     db.exec(SCHEMA);
+    this.migrate();
+  }
+  /** Bring pre-TikTok databases up to date without touching existing rows. */
+  private migrate(): void {
+    const cols = this.db.prepare("PRAGMA table_info(videos)").all() as Array<{ name: string }>;
+    const names = new Set(cols.map((c) => c.name));
+    if (!names.has("targets")) this.db.exec("ALTER TABLE videos ADD COLUMN targets TEXT");
+    if (!names.has("tiktok_privacy")) this.db.exec("ALTER TABLE videos ADD COLUMN tiktok_privacy TEXT");
+    if (!names.has("tiktok_publish_id")) this.db.exec("ALTER TABLE videos ADD COLUMN tiktok_publish_id TEXT");
+    this.db.prepare("UPDATE videos SET targets=? WHERE targets IS NULL").run(JSON.stringify(["youtube"]));
+    this.db.prepare("UPDATE videos SET tiktok_privacy=? WHERE tiktok_privacy IS NULL").run("SELF_ONLY");
   }
   static file(path: string): VideoStore {
     return new VideoStore(new Database(path));
@@ -32,10 +44,12 @@ export class VideoStore {
       | VideoRow
       | undefined;
     const status: VideoStatus = sidecar ? "pending" : "needs-metadata";
+    const targets = JSON.stringify(sidecar?.targets ?? ["youtube"]);
+    const tiktokPrivacy = sidecar?.tiktokPrivacy ?? "SELF_ONLY";
     if (existing) {
       this.db
         .prepare(
-          "UPDATE videos SET title=?,description=?,tags=?,publishAt=?,lang=?,status=?,updated_at=? WHERE id=?"
+          "UPDATE videos SET title=?,description=?,tags=?,publishAt=?,lang=?,status=?,targets=?,tiktok_privacy=?,updated_at=? WHERE id=?"
         )
         .run(
           sidecar?.title ?? existing.title,
@@ -44,6 +58,8 @@ export class VideoStore {
           sidecar?.publishAt ?? existing.publishAt,
           sidecar?.language ?? "ar",
           status,
+          targets,
+          tiktokPrivacy,
           now,
           existing.id
         );
@@ -52,7 +68,7 @@ export class VideoStore {
     const id = randomUUID();
     this.db
       .prepare(
-        "INSERT INTO videos(id,file_path,title,description,tags,publishAt,lang,status,attempts,created_at,updated_at) VALUES(?,?,?,?,?,?,?,?,0,?,?)"
+        "INSERT INTO videos(id,file_path,title,description,tags,publishAt,lang,status,attempts,created_at,updated_at,targets,tiktok_privacy) VALUES(?,?,?,?,?,?,?,?,0,?,?,?,?)"
       )
       .run(
         id,
@@ -64,17 +80,22 @@ export class VideoStore {
         sidecar?.language ?? "ar",
         status,
         now,
-        now
+        now,
+        targets,
+        tiktokPrivacy
       );
     return this.byId(id);
   }
   setStatus(id: string, status: VideoStatus, patch: Partial<VideoRow> = {}): VideoRow {
     const v = this.byId(id);
     this.db
-      .prepare("UPDATE videos SET status=?,youtube_video_id=?,error=?,attempts=?,updated_at=? WHERE id=?")
+      .prepare(
+        "UPDATE videos SET status=?,youtube_video_id=?,tiktok_publish_id=?,error=?,attempts=?,updated_at=? WHERE id=?"
+      )
       .run(
         status,
         patch.youtube_video_id ?? v.youtube_video_id,
+        patch.tiktok_publish_id ?? v.tiktok_publish_id,
         patch.error ?? null,
         patch.attempts ?? v.attempts,
         new Date().toISOString(),

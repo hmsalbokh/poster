@@ -19,6 +19,11 @@ export interface PosterApi {
   getSetting(key: string): Promise<string | null>;
   setSetting(key: string, value: string): Promise<void>;
   authStatus(): Promise<{ signedIn: boolean }>;
+  getClient(): Promise<{ clientId: string; hasSecret: boolean; linked: boolean }>;
+  tiktokAuthStatus(): Promise<{ linked: boolean }>;
+  getTikTokClient(): Promise<{ clientKey: string; hasSecret: boolean; linked: boolean }>;
+  saveTikTokClient(clientKey: string, clientSecret: string): Promise<void>;
+  beginTikTokLogin(): Promise<string>;
   saveClient(clientId: string, clientSecret: string): Promise<void>;
   beginLogin(): Promise<string>;
   quotaStatus(): Promise<{ left: number; usedUnits: number }>;
