@@ -3,6 +3,10 @@
   "private": true,
   "version": "0.1.0",
   "description": "Scheduled YouTube Shorts uploader from a local folder",
+  "author": "Poster",
+  "build": {
+    "extends": "./electron-builder.yml"
+  },
   "main": "out/main/index.js",
   "scripts": {
     "dev": "electron-vite dev",

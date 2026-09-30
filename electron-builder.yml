@@ -1,0 +1,14 @@
+appId: com.poster.uploader
+productName: Poster
+directories:
+  output: dist
+files:
+  - out/**/*
+  - package.json
+win:
+  target:
+    - nsis
+  artifactName: Poster-Setup-${version}.${ext}
+nsis:
+  oneClick: false
+  allowToChangeInstallationDirectory: true

@@ -1,0 +1,10 @@
+node_modules/
+out/
+dist/
+*.db
+*.db-journal
+tokens.json
+tokens.bin
+watch-folder/
+.DS_Store
+Thumbs.db
