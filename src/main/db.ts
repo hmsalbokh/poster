@@ -85,6 +85,33 @@ export class VideoStore {
   listByStatus(s: VideoStatus): VideoRow[] {
     return this.db.prepare("SELECT * FROM videos WHERE status=? ORDER BY publishAt ASC").all(s) as VideoRow[];
   }
+  listAll(): VideoRow[] {
+    return this.db.prepare("SELECT * FROM videos ORDER BY created_at DESC").all() as VideoRow[];
+  }
+  listEvents(limit = 100): Array<{ id: number; video_id: string | null; level: string; message: string; at: string }> {
+    return this.db.prepare("SELECT * FROM events ORDER BY id DESC LIMIT ?").all(limit) as Array<{
+      id: number;
+      video_id: string | null;
+      level: string;
+      message: string;
+      at: string;
+    }>;
+  }
+  getSetting(key: string): string | null {
+    const row = this.db.prepare("SELECT value FROM settings WHERE key=?").get(key) as
+      | { value: string }
+      | undefined;
+    return row?.value ?? null;
+  }
+  setSetting(key: string, value: string): void {
+    this.db.prepare("INSERT INTO settings(key,value) VALUES(?,?) ON CONFLICT(key) DO UPDATE SET value=excluded.value").run(key, value);
+  }
+  countRecentUploads(sinceIso: string): number {
+    const row = this.db
+      .prepare("SELECT COUNT(*) AS n FROM videos WHERE status IN ('uploading','scheduled','published') AND updated_at>=?")
+      .get(sinceIso) as { n: number };
+    return row.n;
+  }
   getDue(nowIso: string): VideoRow[] {
     return this.db
       .prepare(

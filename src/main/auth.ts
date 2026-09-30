@@ -16,6 +16,14 @@ export class AuthStore {
 
   configure(clientId: string, clientSecret: string, redirectUri: string): void {
     this.oauth = new OAuth2Client(clientId, clientSecret, redirectUri);
+    if (this.tokens.refresh_token) this.oauth.setCredentials(this.tokens);
+  }
+  restore(tokens: { refresh_token?: string; access_token?: string; expiry_date?: number }): void {
+    this.tokens = tokens;
+    if (this.oauth) this.oauth.setCredentials(tokens);
+  }
+  snapshot(): { refresh_token?: string; access_token?: string; expiry_date?: number } {
+    return { ...this.tokens };
   }
   isSignedIn(): boolean {
     return Boolean(this.tokens.refresh_token);
