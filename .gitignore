@@ -8,3 +8,5 @@ tokens.bin
 watch-folder/
 .DS_Store
 Thumbs.db
+
+*.log
