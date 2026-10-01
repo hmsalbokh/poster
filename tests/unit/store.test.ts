@@ -6,15 +6,15 @@ describe("VideoStore", () => {
   beforeEach(() => {
     store = VideoStore.inMemory();
   });
-  it("upserts pending then transitions to scheduled", () => {
+  it("upserts pending then transitions to uploaded", () => {
     const v = store.upsertPending("c:/watch/clip1.mp4", {
       title: "t",
       publishAt: new Date(Date.now() + 60000).toISOString()
     } as never);
     expect(v.status).toBe("pending");
-    const s = store.setStatus(v.id, "scheduled", { youtube_video_id: "abc" });
-    expect(s.status).toBe("scheduled");
-    expect(store.listByStatus("scheduled")).toHaveLength(1);
+    const s = store.setStatus(v.id, "uploaded", { youtube_video_id: "abc" });
+    expect(s.status).toBe("uploaded");
+    expect(store.listByStatus("uploaded")).toHaveLength(1);
   });
   it("marks needs-metadata when sidecar is null", () => {
     const v = store.upsertPending("c:/watch/orphan.mp4", null);

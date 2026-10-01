@@ -2,7 +2,7 @@ export function appName(): string {
   return "poster";
 }
 
-export type VideoStatus = "pending" | "uploading" | "scheduled" | "published" | "failed" | "needs-metadata";
+export type VideoStatus = "pending" | "uploading" | "scheduled" | "uploaded" | "published" | "failed" | "needs-metadata";
 
 export interface VideoRow {
   id: string;

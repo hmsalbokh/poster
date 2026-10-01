@@ -35,7 +35,7 @@ describe("Scheduler.tick destinations", () => {
       youtube: { name: "youtube", upload: async () => ({ videoId: "yt1" }) }
     });
     await scheduler.tick(new Date().toISOString());
-    const after = store.listByStatus("scheduled");
+    const after = store.listByStatus("uploaded");
     expect(after).toHaveLength(1);
     expect(after[0].youtube_video_id).toBe("yt1");
     expect(row.id).toBe(after[0].id);
@@ -51,7 +51,7 @@ describe("Scheduler.tick destinations", () => {
       tiktok: { name: "tiktok", upload: async () => ({ publishId: "pub1" }) } as never
     });
     await scheduler.tick(new Date().toISOString());
-    expect(store.listByStatus("scheduled")[0].tiktok_publish_id).toBe("pub1");
+    expect(store.listByStatus("uploaded")[0].tiktok_publish_id).toBe("pub1");
 
     store.upsertPending("c:/w/c.mp4", {
       title: "t",
@@ -68,5 +68,31 @@ describe("Scheduler.tick destinations", () => {
     expect(pending[0].error).toContain("tiktok: boom");
     expect(pending[0].youtube_video_id).toBe("yt2");
     expect(pending[0].attempts).toBe(1);
+  });
+  it("never uploads the same target twice", async () => {
+    const store = VideoStore.inMemory();
+    const row = store.upsertPending("c:/w/d.mp4", {
+      title: "t",
+      publishAt: pastIso(),
+      targets: ["youtube", "tiktok"]
+    } as never);
+    // Simulate a previous partial run: youtube done, tiktok still missing.
+    store.setStatus(row.id, "pending", { youtube_video_id: "yt-done" });
+    let youtubeCalls = 0;
+    const scheduler = new Scheduler(store, {
+      youtube: {
+        name: "youtube",
+        upload: async () => {
+          youtubeCalls++;
+          return { videoId: "yt-new" };
+        }
+      },
+      tiktok: { name: "tiktok", upload: async () => ({ publishId: "pub-d" }) } as never
+    });
+    await scheduler.tick(new Date().toISOString());
+    expect(youtubeCalls).toBe(0);
+    const done = store.listByStatus("uploaded")[0];
+    expect(done.youtube_video_id).toBe("yt-done");
+    expect(done.tiktok_publish_id).toBe("pub-d");
   });
 });

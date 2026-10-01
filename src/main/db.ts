@@ -129,7 +129,7 @@ export class VideoStore {
   }
   countRecentUploads(sinceIso: string): number {
     const row = this.db
-      .prepare("SELECT COUNT(*) AS n FROM videos WHERE status IN ('uploading','scheduled','published') AND updated_at>=?")
+      .prepare(        "SELECT COUNT(*) AS n FROM videos WHERE status IN ('uploading','scheduled','uploaded','published') AND updated_at>=?")
       .get(sinceIso) as { n: number };
     return row.n;
   }

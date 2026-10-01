@@ -46,8 +46,22 @@ export class Scheduler {
       const targets = parseTargets(row.targets);
       this.store.setStatus(row.id, "uploading");
       const ids: { youtube_video_id?: string; tiktok_publish_id?: string } = {};
+      if (row.youtube_video_id) ids.youtube_video_id = row.youtube_video_id;
+      if (row.tiktok_publish_id) ids.tiktok_publish_id = row.tiktok_publish_id;
       const failures: string[] = [];
+      let skipped = 0;
       for (const target of targets) {
+        // Never upload twice: a stored platform id proves this target is done.
+        if (target === "youtube" && row.youtube_video_id) {
+          skipped++;
+          this.store.log(row.id, "info", `youtube already uploaded as ${row.youtube_video_id} — skipped`);
+          continue;
+        }
+        if (target === "tiktok" && row.tiktok_publish_id) {
+          skipped++;
+          this.store.log(row.id, "info", `tiktok already uploaded as ${row.tiktok_publish_id} — skipped`);
+          continue;
+        }
         try {
           if (target === "youtube") {
             const uploader = this.uploaders.youtube;
@@ -63,7 +77,7 @@ export class Scheduler {
             };
             const { videoId } = await uploader.upload(row.file_path, meta);
             ids.youtube_video_id = videoId;
-            this.store.log(row.id, "info", `youtube scheduled as ${videoId}`);
+            this.store.log(row.id, "info", `youtube uploaded as ${videoId}`);
           } else {
             const uploader = this.uploaders.tiktok;
             if (!uploader) throw new Error("tiktok-not-linked");
@@ -87,7 +101,8 @@ export class Scheduler {
         }
       }
       if (failures.length === 0) {
-        this.store.setStatus(row.id, "scheduled", { ...ids, attempts: 0 });
+        this.store.setStatus(row.id, "uploaded", { ...ids, attempts: 0 });
+        if (skipped > 0) this.store.log(row.id, "info", "all targets already uploaded — marked as uploaded");
       } else {
         const attempts = row.attempts + 1;
         const error = failures.join("; ");
